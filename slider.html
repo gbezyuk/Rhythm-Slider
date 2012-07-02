@@ -95,11 +95,16 @@
                 var lis_width = 0;
                 var $filtered = $();
                 var $skipped = $();
+                var filtered_count = 0;
                 var skipped_width = 0;
+                var MAXIMAL_COUNT = 6;
                 _('shift passed', shift);
                 $lis.each(function () {
                     var $li = $(this);
                     var li_width = $li.data('width');
+                    if (lis_width + li_width >= container_width || filtered_count >= MAXIMAL_COUNT) {
+                        return false;
+                    }
                     if (shift > 0) {
                         shift -= 1;
                         skipped_width += li_width;
@@ -108,9 +113,7 @@
                         return true;
                     }
                     _('filtering portion', $li, li_width, lis_width, $filtered);
-                    if (lis_width + li_width >= container_width) {
-                        return false;
-                    }
+                    filtered_count += 1;
                     lis_width += li_width;
                     $filtered = $filtered.add($li);
                 });
