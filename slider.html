@@ -40,7 +40,7 @@
                         list-style: none;
                         height: 59px;
                         float: left;
-                        background: #fff;
+                        background: #ff0;
                         overflow: hidden;
                     }
                         .partners ul li img {
@@ -67,6 +67,94 @@
              * Each $li element has its own width, and that's enough for us.
              * We operate $li's margin-right css property to support autorhythming.
              * Instead of actual scrolling we use $li hiding and showing.
+             *
+             * Note:
+             * -----
+             * Whatever software you write, plan to throw first version away. So this version is the spike to throw away.
+             *
+             * Second iteration:
+             * -----------------
+             * Terms:
+             * ------
+             *  Slider - global container with slides and controls
+             *  Slide - a $li element
+             *  Visible Slide - slide currently visible on site
+             *  Hidden Slide - slide currently hidden
+             *  Slide Width - width of image contained by a Slide
+             *  Slider Step - transition to previous or next slide.
+             *      Usually one visible slide becomes hidden and one hidden slide becomes visible during transition.
+             *  Slider Capacity - count of Slides able to be visible in a single moment. Shortcuted as SC.
+             *  Slider Button - a control making slider to perform a step. There are usually two buttons: prev & next..
+             *
+             * methods:
+             * --------
+             * - align_visible_slides():
+             *      puts calculated margin-rights to every visible element except last one;
+             *      at the same time resets to zero margins of all other elements (?)
+             * - step_slider(direction):
+             *      performes a slider step. Calls align_visible_slides() inside itself.
+             *
+             * workflow (briefly):
+             * -------------------
+             * 1. layout is loaded
+             * 2. taking first SC slides, aligning 'em (performing a step with no direction)
+             * 3. on slider button click performing slider step and slides alignment (inside step procedure)
+             *
+             * Slider step mechanics:
+             * ----------------------
+             * Each time performing a slider step we move the first slide to the tail, or the last one to the slider
+             * head (depending on step direction). So no actual scrolling occurs, but a circular slide exchange.
+             * Animation is a tricky question here.
+             *
+             * Example:
+             * --------
+             * Assume we have SC=4 and number of slides is 6:
+             * state 1: [1 2 3 4] 5 6
+             * state 2: 1 [2 3 4 5] 6   is really   [2 3 4 5] 6 1
+             * state 3: 1 2 [3 4 5 6]   is really   [3 4 5 6] 1 2
+             * state 4: 1] 2 3 [4 5 6   is really   [4 5 6 1] 2 3
+             * state 5: 1 2] 3 4 [5 6   is really   [5 6 1 2] 3 4
+             * state 6: 1 2 3] 4 5 [6   is really   [6 1 2 3] 4 5
+             * state 7 == state 1
+             *
+             * Transition animation:
+             * ---------------------
+             * A) Consider transition from state 1 to state 2 (direct transition):
+             * start:   visible slides: [1, 2, 3, 4]
+             *          hidden slides: [5, 6]
+             * finish:  visible slides [2, 3, 4, 5]
+             *          hidden slides: [6, 1]
+             * difference:
+             *  slide 5 shows up, slide 1 hides down and moves from slider head to slider tail (being hidden)
+             *  slide 5 is first hidden slide
+             *  slide 1 is first visible slide
+             *  so, first hidden slide shows up and first visible slide hides down and moves to tail being hidden
+             * B) Consider transition from state 2 to state 1 (reverse transition):
+             * start:   visible slides: [2, 3, 4, 5]
+             *          hidden slides: [6, 1]
+             * finish:  visible slides [1, 2, 3, 4]
+             *          hidden slides: [5, 6]
+             * difference:
+             *  slide 1 shows up, slide 5 hides down and moves from slider tail to slider head (being hidden)
+             *  slide 1 is last hidden slide
+             *  slide 5 is last visible slide
+             *  so, situation is same as direct transition, yet mirrored
+             *
+             * What happens if SC == number of slides?
+             * ---------------------------------------
+             * Actually, not transition, and slider is unnecessary here. Yet it is still functional:
+             * |: [1 2 3] | [2 3 1] | [3 1 2] :|
+             * The question is how to make a smooth animation, if element is appearing at one side of a slider,
+             * and appearing at another at the exactly same time. The only available answer is slide duplication:
+             * before animation: [1 2 3], no duplication
+             * animation start: [1 2 3 1], slide 1 is duplicated. left one starts to disappear, right one starts to appear now.
+             * animation end: [2 3 1], no duplication again: right one completely appeared, and left one is totally disappeared
+             *
+             * How about to use this as a common case? It's OK, yet the duplicated slide appearance is degenerated:
+             * [1 2 3] 4 -> [1 2 3] 4 (1) -> [2 3 4] 1, so 1 is still hidden
+             *
+             * Wow. Too much for immediate implementation, dude. Come get some rest now.
+             *
              */
             function _() {
                 if (typeof(console) == 'object' && typeof(console.log) == 'function') {
@@ -74,55 +162,68 @@
                 }
             }
 
-            function _autorhythm(data, $lis) {
+            function _autorhythm(direction) {
+                var data = _next_lis_portion(direction);
                 _('authorhythm', data);
                 var ANIMATION_SPEED = 0;
+                var $lis = $('ul>li');
                 var last_one = $(data.lis[data.lis_count-1]);
                 var lis_except_last_one = data.lis.not(last_one);
                 var all_other_lis = $lis.not(lis_except_last_one);
                 var margin_for_active_lis = data.width_difference / (data.lis_count-1);
-                all_other_lis.animate({'margin-right': 0 }, ANIMATION_SPEED)
+                all_other_lis.animate({'margin-right': 0 }, ANIMATION_SPEED);
                 lis_except_last_one.each(function () {
                     var $li = $(this);
+                    _('animate here', $li, margin_for_active_lis);
                     $li.animate({'margin-right': '' + margin_for_active_lis + 'px', 'width': $li.data('width') }, ANIMATION_SPEED);
                 });
                 last_one.animate({'width': last_one.data('width') }, ANIMATION_SPEED);
                 all_other_lis.not(data.lis).animate({'width': 0 }, ANIMATION_SPEED)
+                _('mbe', all_other_lis.not(data.lis));
 
             }
 
-            function _next_lis_portion($lis, container_width, shift) {
+            function _next_lis_portion(direction) {
+                var container_width = 940;
+                var $lis = $('ul>li');
                 var lis_width = 0;
                 var $filtered = $();
                 var $skipped = $();
                 var filtered_count = 0;
                 var skipped_width = 0;
                 var MAXIMAL_COUNT = 6;
-                _('shift passed', shift);
+                if (direction == 'prev') {
+                    var $li = $($lis[0]);
+                    var $ul = $lis.parent();
+                    $ul.append($li);
+                    $lis = $lis.parent().find('>li');
+                    _('left');
+                }
+                else if (direction == 'next') {
+                    var $li = $($lis[$lis.size()-1]);
+                    var $ul = $lis.parent();
+                    $ul.prepend($li);
+                    $lis = $lis.parent().find('>li');
+                    _('right');
+                }
+//                _($lis);
+//                _('shift passed', shift);
                 $lis.each(function () {
                     var $li = $(this);
-                    var li_width = $li.data('width');
+                    var li_width = $li.find('img').width();
                     if (lis_width + li_width >= container_width || filtered_count >= MAXIMAL_COUNT) {
                         return false;
                     }
-                    if (shift > 0) {
-                        shift -= 1;
-                        skipped_width += li_width;
-                        $skipped = $skipped.add($li);
-                        _('skipping', $li, li_width, skipped_width, $skipped);
-                        return true;
-                    }
-                    _('filtering portion', $li, li_width, lis_width, $filtered);
+//                    _('filtering portion', $li, li_width, lis_width, $filtered);
                     filtered_count += 1;
                     lis_width += li_width;
                     $filtered = $filtered.add($li);
                 });
-                $filtered.css('background', 'red');
-                _('_next_lis_portion', $filtered, lis_width, container_width);
+                $skipped.css('background', 'green');
+                $filtered.css('background', 'white');
+//                _('_next_lis_portion', $filtered, lis_width, container_width);
                 return {
                     'lis': $filtered,
-                    'skipped': $skipped,
-                    'skipped_width': skipped_width,
                     'lis_width': lis_width,
                     'lis_count': $filtered.size(),
                     'container_width': container_width,
@@ -130,29 +231,19 @@
                 };
             }
 
-            function init_partners_scroller(locator) {
-                var $container = $(locator);
-                var $ul = $container.find('>ul');
-                var $lis = $ul.find('>li');
-                var $next_button = $container.find('.button-right');
-                var $prev_button = $container.find('.button-left');
-                var shift_in_elements = 0;
-                $lis.each(function () {
-                    var $li = $(this);
-                    $li.data('width', $li.width());
-                });
-                _autorhythm(_next_lis_portion($lis, $container.width(), shift_in_elements), $lis);
+            function init_partners_scroller() {
+                var $next_button = $('.button-right');
+                var $prev_button = $('.button-left');
+                _autorhythm(_next_lis_portion());
                 $next_button.click(function () {
-                    shift_in_elements -= 1;
-                    _autorhythm(_next_lis_portion($lis, $container.width(), shift_in_elements), $lis);
+                    _autorhythm('next');
                 });
                 $prev_button.click(function () {
-                    shift_in_elements += 1;
-                    _autorhythm(_next_lis_portion($lis, $container.width(), shift_in_elements), $lis);
+                    _autorhythm('prev');
                 });
             }
             $(function () {
-                init_partners_scroller('.partners');
+                init_partners_scroller();
             });
         </script>
     </head>
@@ -167,19 +258,19 @@
                             <div class="partners">
                                 <ul>
 
-                                    <li><img width="150" height="59" alt="Severstal" src="http://stage.als.da-dev.org/media/clients/logos/sever.png"></li>
-                                    <li><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>
-                                    <li><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>
-                                    <li><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>
-                                    <li><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>
-                                    <li><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>
-                                    <li><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>
-                                    <li><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>
-                                    <li><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>
-                                    <li><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>
-                                    <li><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>
-                                    <li><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>
-                                    <li><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>
+                                    <li id="first"><img width="150" height="59" alt="Severstal" src="http://stage.als.da-dev.org/media/clients/logos/sever.png"></li>
+                                    <li id="second"><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>
+                                    <li id="third"><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>
+                                    <li id="fourth"><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>
+                                    <li id="fifth"><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>
+                                    <li id="sixth"><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>
+                                    <!--<li><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>-->
+                                    <!--<li><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>-->
+                                    <!--<li><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>-->
+                                    <!--<li><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>-->
+                                    <!--<li><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>-->
+                                    <!--<li><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>-->
+                                    <!--<li><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>-->
 
                                 </ul>
 
