@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <link rel="stylesheet" href="http://stage.als.da-dev.org/static/compressed/css/6c3e29509948.css" type="text/css" />
+        <!--<script type="text/javascript" src="http://stage.als.da-dev.org/static/compressed/js/9468946154c6.js"></script>-->
+
+        <style>
+            .partners {
+                background: #d3d3d3;
+                overflow: hidden;
+                position: relative;
+                height: 59px;
+                width: 940px;
+                padding: 15px 38px;
+            }
+                .partners .button {
+                    position: absolute;
+                    top: 0;
+                    height: 89px;
+                    width: 15px;
+                    background: #00008b;
+                    cursor: pointer;
+                }
+                .partners .button.button-left {
+                    left: 0;
+                }
+                .partners .button.button-right {
+                    right: 0;
+                }
+
+                .partners ul {
+                    list-style: none;
+                    overflow: hidden;
+                    background: #add8e6;
+                    width: 940px;
+                    height: 59px;
+                    overflow: hidden;
+                    position: relative;
+                }
+                    .partners ul li {
+                        list-style: none;
+                        height: 59px;
+                        float: left;
+                        background: #fff;
+                    }
+                        .partners ul li img {
+                            height: 59px;
+                        }
+        </style>
+
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.js"></script>
+        <script type="text/javascript">
+            /*
+             * This script handles slider behaviour. It is supposed to replace jquery-carousel script.
+             * Requirements:
+             *  - slider for picture changing
+             *  - horizontal rhythm auto support
+             *  - autoscrolling
+             *  - scrolling by clicking left and right buttons
+             *  - auto image size detection
+             *  - maximal and minimal images count support (?)
+             */
+            function _() {
+                if (typeof(console) == 'object' && typeof(console.log) == 'function') {
+                    console.log.apply(console, arguments);
+                }
+            }
+
+            function _autorhythm(data) {
+                _('authorhythm', data);
+                data.lis.not(data.lis[data.lis_count-1]).animate({'margin-right': data.width_difference / (data.lis_count-1)}, 'slow');
+            }
+
+            function _next_lis_portion($lis, container_width) {
+                var lis_width = 0;
+                var $filtered = $();
+                $lis.each(function () {
+                    var $li = $(this);
+                    var li_width = $li.width();
+                    _('filtering portion', $li, li_width, lis_width, $filtered);
+                    if (lis_width + li_width >= container_width) {
+                        return false;
+                    }
+                    lis_width += li_width;
+                    $filtered = $filtered.add($li);
+                });
+                $filtered.css('background', 'red');
+                _('_next_lis_portion', $filtered, lis_width, container_width);
+                return {
+                    'lis': $filtered,
+                    'lis_width': lis_width,
+                    'lis_count': $filtered.size(),
+                    'container_width': container_width,
+                    'width_difference': container_width - lis_width
+                };
+            }
+
+            function init_partners_scroller(locator) {
+                var $container = $(locator);
+                var $ul = $container.find('>ul');
+                var $lis = $ul.find('>li');
+                _autorhythm(_next_lis_portion($lis, $container.width()));
+            }
+            $(function () {
+                init_partners_scroller('.partners');
+            });
+        </script>
+    </head>
+
+    <body class="main">
+        <div id="base-wrapper">
+            <div id="base-wrapper4wrapper">
+                <div id="body-wrapper">
+                    <div id="body">
+                        <div id="content-holder">
+
+                            <div class="partners">
+                                <ul>
+
+                                    <li><img width="150" height="59" alt="Severstal" src="http://stage.als.da-dev.org/media/clients/logos/sever.png"></li>
+                                    <li><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>
+                                    <li><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>
+                                    <li><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>
+                                    <li><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>
+                                    <li><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>
+                                    <li><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>
+                                    <li><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>
+                                    <li><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>
+                                    <li><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>
+                                    <li><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>
+                                    <li><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>
+                                    <li><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>
+
+                                </ul>
+
+                                <span class="button button-left">&lt;</span>
+                                <span class="button button-right">&gt;</span>
+
+                            </div>
+
+                            <!--<div class=" jcarousel-skin-partners">-->
+                            <!--<div class="jcarousel-container jcarousel-container-horizontal" style="position: relative; display: block;">-->
+                            <!--<div class="jcarousel-clip jcarousel-clip-horizontal" style="position: relative;">-->
+                            <!--<ul class="jcarousel-list jcarousel-list-horizontal" id="jcarousel-partners" style="overflow: hidden; position: relative; top: 0px; margin: 0px; padding: 0px; left: -1092px; width: 2284px;">-->
+
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-1 jcarousel-item-1-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="1"><img width="150" height="59" alt="Severstal" src="http://stage.als.da-dev.org/media/clients/logos/sever.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-2 jcarousel-item-2-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="2"><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-3 jcarousel-item-3-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="3"><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-4 jcarousel-item-4-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="4"><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-5 jcarousel-item-5-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="5"><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-6 jcarousel-item-6-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="6"><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-7 jcarousel-item-7-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="7"><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-233 jcarousel-item-233-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="233"><img width="124" height="59" alt="rehau" src="http://stage.als.da-dev.org/media/clients/logos/rehau.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-234 jcarousel-item-234-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="234"><img width="118" height="59" alt="Amway" src="http://stage.als.da-dev.org/media/clients/logos/amway.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-235 jcarousel-item-235-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="235"><img width="150" height="59" alt="kraftfoods" src="http://stage.als.da-dev.org/media/clients/logos/craftfoods.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-236 jcarousel-item-236-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="236"><img width="113" height="59" alt="МТС" src="http://stage.als.da-dev.org/media/clients/logos/mts.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-237 jcarousel-item-237-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="237"><img width="55" height="59" alt="BMW" src="http://stage.als.da-dev.org/media/clients/logos/bmw.png"></li>-->
+                            <!--<li class="jcarousel-item jcarousel-item-horizontal jcarousel-item-238 jcarousel-item-238-horizontal" style="float: left; list-style: none outside none;" jcarouselindex="238"><img width="150" height="59" alt="тест" src="http://stage.als.da-dev.org/media/clients/logos/trast_1.png"></li>-->
+
+                            <!--</ul>-->
+                            <!--</div>-->
+                            <!--<span class="jcarousel-prev jcarousel-prev-horizontal" style="display: block;">&lt;</span>-->
+                            <!--<span class="jcarousel-next jcarousel-next-horizontal" style="display: block;">&gt;</span>-->
+                            <!--</div>-->
+                            <!--</div>-->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
