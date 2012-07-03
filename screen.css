@@ -1,0 +1,49 @@
+.partners {
+    background: #d3d3d3;
+    overflow: hidden;
+    position: relative;
+    height: 59px;
+    width: 940px;
+    padding: 15px 38px;
+    margin: 100px auto;
+}
+
+    .partners .button {
+        position: absolute;
+        top: 0;
+        height: 89px;
+        width: 15px;
+        background: #00008b;
+        cursor: pointer;
+    }
+        .partners .button.button-prev {
+            left: 0;
+        }
+        .partners .button.button-next {
+            right: 0;
+        }
+
+    .partners ul {
+        list-style: none;
+        background: #add8e6;
+        width: 940px;
+        height: 59px;
+        overflow: hidden;
+        position: relative;
+        margin: 0;
+        padding: 0;
+    }
+        .partners ul li {
+            list-style: none;
+            height: 59px;
+            float: left;
+            background: #ff0;
+            overflow: hidden;
+        }
+            .partners ul li img {
+                height: 59px;
+            }
+
+        .partners ul li.filtered {
+            background-color: white;
+        }
