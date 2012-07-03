@@ -139,7 +139,7 @@ Rhythm.prototype = {
     _filter: function () {
         var self = this;
         var $ul = this.$container.find('>ul');
-        var ul_width = $ul.width();
+        var container_width = this.$container.width();
         var $filtered = $();
         var filtered_width = 0;
         var filtered_count = 0;
@@ -149,7 +149,7 @@ Rhythm.prototype = {
                 return true;
             }
             var li_width = $li.find('img').width();
-            if (filtered_width + li_width > ul_width || filtered_count == self.MAX_SLIDES_VISIBLE) {
+            if (filtered_width + li_width > container_width || filtered_count == self.MAX_SLIDES_VISIBLE) {
                 return false;
             }
             filtered_width += li_width;
@@ -160,7 +160,7 @@ Rhythm.prototype = {
             '$elements': $filtered,
             'width': filtered_width,
             'count': filtered_count,
-            'ul_width': ul_width
+            'container_width': container_width
         }
     },
 
@@ -168,8 +168,14 @@ Rhythm.prototype = {
         var filtered = this._filter();
         var $last_one = $(filtered.$elements.get(filtered.count - 1));
         var $other_lis = this.$container.find('li').not(filtered.$elements);
-        var margin_right = (filtered.ul_width - filtered.width) / (filtered.count - 1);
-        $other_lis.removeClass('filtered').removeClass('last_one').animate({'margin-right': 0, 'width': 0}, this.ANIMATION_SPEED);
+        var margin_right = (filtered.container_width - filtered.width) / (filtered.count - 1);
+        $other_lis.removeClass('filtered').removeClass('last_one').animate({'margin-right': 0, 'width': 0},
+            this.ANIMATION_SPEED, function () {
+                var $li = $(this);
+                if ($li.hasClass('skip_me')) {
+                    $li.remove();
+                }
+            });
         filtered.$elements.addClass('filtered').not($last_one).removeClass('last_one').each(function () {
             var $li = $(this);
             var li_width = $li.find('img').width();
@@ -184,9 +190,6 @@ Rhythm.prototype = {
         var $li_copy = $li.clone();
         $li.addClass('skip_me');
         $li_copy.appendTo($ul).width(0);
-        $li.animate({'width': 0, 'margin-right': 0}, function () {
-            $(this).remove();
-        });
         this.align();
     },
 
@@ -196,9 +199,6 @@ Rhythm.prototype = {
         var $li_copy = $li.clone();
         $li.addClass('skip_me');
         $li_copy.prependTo($ul).width(0);
-        $li.animate({/*'width': 0, 'margin-right': 0*/}, function () {
-            $(this).remove();
-        });
         this.align();
     }
 };
